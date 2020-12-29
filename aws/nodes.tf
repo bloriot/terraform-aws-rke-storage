@@ -42,7 +42,11 @@ resource "aws_instance" "rke-node" {
   key_name               = aws_key_pair.rke-node-key.id
   iam_instance_profile   = aws_iam_instance_profile.rke-aws.name
   vpc_security_group_ids = [aws_security_group.allow-all.id]
-  tags                   = local.cluster_id_tag
+
+  ebs_block_device {
+    device_name = "/dev/sdb"
+    volume_size = 20
+  }
 
   provisioner "remote-exec" {
     connection {
@@ -57,6 +61,11 @@ resource "aws_instance" "rke-node" {
       "sudo systemctl start docker",
       "sudo systemctl enable docker",
     ]
+  }
+
+  tags = {
+    "kubernetes.io/cluster/${var.cluster_id}" = "owned",
+    Name  = "rke-node-${count.index + 1}",
   }
 }
 
