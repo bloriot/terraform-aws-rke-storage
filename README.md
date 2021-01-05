@@ -74,6 +74,15 @@ Get rook-ceph manifests at https://github.com/rook/rook/tree/master/cluster/exam
 
 ### Install
 
+ * Label all workers node to be usable by rook-ceph for any service
+
+```bash
+kubectl get nodes -l node-role.kubernetes.io/worker=true -o custom-columns=NAME:.metadata.name --no-headers |
+while read node ; do
+  kubectl label node $node node-role.rook-ceph/cluster=any
+done
+```
+
  * Install the Rook-Ceph common components, CSI roles, and the Rook-Ceph operator
 
 ```bash
@@ -82,15 +91,6 @@ kubectl apply -f common.yaml -f operator.yaml
 
 # watch pods deployment
 watch kubectl get pods -n rook-ceph
-```
-
- * Label all workers node to be usable by rook-ceph for any service
-
-```bash
-kubectl get nodes -l node-role.kubernetes.io/worker=true -o custom-columns=NAME:.metadata.name --no-headers |
-while read node ; do
-  kubectl label node $node node-role.rook-ceph/cluster=any
-done
 ```
 
  * Configure `cluster.yaml`, ie: set separate device for metadata

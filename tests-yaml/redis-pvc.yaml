@@ -1,0 +1,41 @@
+# kubectl apply -f redis-pvc.yaml
+# kubectl exec  -it -- df -h
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: my-claim
+spec:
+  storageClassName: 
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: redis
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: redis
+  template:
+    metadata:
+      labels:
+        run: redis
+    spec:
+      containers:
+      - image: redis:4
+        imagePullPolicy: IfNotPresent
+        name: redis
+        volumeMounts:
+        - name: data
+          mountPath: "/data-pv-claimed/"
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: my-claim
